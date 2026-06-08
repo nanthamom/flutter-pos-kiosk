@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -17,10 +18,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
   final List<Product> products = [];
 
   @override
+  void initState() { // screen opens, runs once
+    super.initState();
+
+    loadProducts(); // load saved products from Hive
+  }
+
+  void loadProducts() {
+    final box = Hive.box('inventory'); // connect to Hive database
+
+    print('Total Hive Records: ${box.length}');
+    print(box.values);
+    
+    for (var item in box.values) { // loop through every saved item in Hive
+      products.add( // add each item into products list
+        Product( // convert Hive data into Product Object
+          name: item['name'],
+          price: item['price'],
+          stock: item['stock'],
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory & POS Kiosk'),
+        title: const Text('Inventory & POS'),
       ),
 
       floatingActionButton: FloatingActionButton(
@@ -69,6 +94,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 TextButton(
                   onPressed: (){
                     setState(() {
+
+                      final box = Hive.box('inventory');
+
+                      box.delete('test');
+                      print(box.keys);
+                      print(box.values);
+
+                      box.add({
+                        
+                        'name': nameController.text,
+                        'price': double.parse(priceController.text),
+                        'stock': int.parse(stockController.text),
+                      });
+
+                      print(box.values);
+
                       products.add(
                         Product(
                         name: nameController.text,
