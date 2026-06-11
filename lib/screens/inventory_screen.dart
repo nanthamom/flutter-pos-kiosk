@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'checkout_screen.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -26,6 +27,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   void loadProducts() {
     final box = Hive.box('inventory'); // connect to Hive database
+    // box.clear(); // delete key indexes
 
     print('Total Hive Records: ${box.length}');
     print(box.values);
@@ -163,77 +165,86 @@ class _InventoryScreenState extends State<InventoryScreen> {
             
             child: ListTile(
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(
+                      product: product,
+                    ),
+                  ),
+                );
+
                 nameController.text = product.name;
                 priceController.text = product.price.toString();
                 stockController.text = product.stock.toString();
 
-                showDialog(
-                  context: context, 
-                  builder:(context) {
-                    return AlertDialog(
-                      title: const Text("Edit Product"),
+                // showDialog(
+                //   context: context, 
+                //   builder:(context) {
+                //     return AlertDialog(
+                //       title: const Text("Edit Product"),
 
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            controller: nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Product Name',
-                            ),
-                          ),
+                //       content: Column(
+                //         mainAxisSize: MainAxisSize.min,
+                //         children: [
+                //           TextField(
+                //             controller: nameController,
+                //             decoration: const InputDecoration(
+                //               labelText: 'Product Name',
+                //             ),
+                //           ),
 
-                          TextField(
-                            controller: priceController,
-                            decoration: const InputDecoration(
-                              labelText: 'Price',
-                            ),
-                          ),
+                //           TextField(
+                //             controller: priceController,
+                //             decoration: const InputDecoration(
+                //               labelText: 'Price',
+                //             ),
+                //           ),
 
-                          TextField(
-                            controller: stockController,
-                            decoration: const InputDecoration(
-                              labelText: 'Stock',
-                            ),
-                          ),
-                        ],
-                      ),
+                //           TextField(
+                //             controller: stockController,
+                //             decoration: const InputDecoration(
+                //               labelText: 'Stock',
+                //             ),
+                //           ),
+                //         ],
+                //       ),
 
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
+                //       actions: [
+                //         TextButton(
+                //           onPressed: () {
+                //             Navigator.pop(context);
 
-                            nameController.clear();
-                            priceController.clear();
-                            stockController.clear();
-                          },
-                          child: const Text('Cancel'),
-                        ),
+                //             nameController.clear();
+                //             priceController.clear();
+                //             stockController.clear();
+                //           },
+                //           child: const Text('Cancel'),
+                //         ),
 
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
+                //         TextButton(
+                //           onPressed: () {
+                //             setState(() {
                               
-                              product.name = nameController.text;
-                              product.price = double.parse(priceController.text);
-                              product.stock = int.parse(stockController.text);
+                //               product.name = nameController.text;
+                //               product.price = double.parse(priceController.text);
+                //               product.stock = int.parse(stockController.text);
 
-                              nameController.clear();
-                              priceController.clear();
-                              stockController.clear();
+                //               nameController.clear();
+                //               priceController.clear();
+                //               stockController.clear();
 
-                            });
+                //             });
 
-                            Navigator.pop(context);
-                          },
+                //             Navigator.pop(context);
+                //           },
 
-                          child: const Text('Save'),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                //           child: const Text('Save'),
+                //         ),
+                //       ],
+                //     );
+                //   },
+                // );
               },
 
             title: Text(product.name),
