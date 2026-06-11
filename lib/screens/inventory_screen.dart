@@ -15,8 +15,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController stockController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   final List<Product> products = [];
+  String searchQuery = ''; // search products
 
   @override
   void initState() { // screen opens, runs once
@@ -28,13 +30,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void loadProducts() {
     final box = Hive.box('inventory'); // connect to Hive database
     // box.clear(); // delete key indexes
+    print(box.keys);
+    print(box.values);
 
     print('Total Hive Records: ${box.length}');
     print(box.values);
     
-    for (var item in box.values) { // loop through every saved item in Hive
+    for (var key in box.keys) { // loop through every saved item in Hive
+      final item = box.get(key);
       products.add( // add each item into products list
         Product( // convert Hive data into Product Object
+          hiveKey: key,
           name: item['name'],
           price: item['price'],
           stock: item['stock'],
@@ -45,7 +51,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+
+      final filteredProducts = products.where((product) {
+        return product.name
+              .toLowerCase()
+              .contains(searchQuery.toLowerCase());
+      }).toList();
+
+      return Scaffold(
+
       appBar: AppBar(
         title: const Text('Inventory & POS'),
       ),
@@ -88,6 +102,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
+
+                    nameController.clear();
+                    priceController.clear();
+                    stockController.clear();
                   },
 
                   child: const Text('Cancel'),
@@ -104,7 +122,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       print(box.values);
 
                       box.add({
-                        
                         'name': nameController.text,
                         'price': double.parse(priceController.text),
                         'stock': int.parse(stockController.text),
@@ -114,14 +131,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
                       products.add(
                         Product(
+                        hiveKey: 0,
                         name: nameController.text,
                         price: double.parse(priceController.text),
                         stock: int.parse(stockController.text),
-                      
                       ),
                     );
                   });
-                  
                   Navigator.pop(context);
 
                   nameController.clear();
@@ -139,13 +155,36 @@ class _InventoryScreenState extends State<InventoryScreen> {
         child: const Icon(Icons.add),
       ),
 
-      body: ListView.builder(
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
+      body: Column(
+      children: [
 
-          return Dismissible(
-            key: Key(product.name), 
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: TextField(
+            controller: searchController,
+
+            onChanged: (value) {
+              setState(() {
+                searchQuery = value;
+              });
+            },
+
+            decoration: const InputDecoration(
+              hintText: 'Search Products',
+              prefixIcon: Icon(Icons.search),
+            ),
+          ),
+        ),
+
+        Expanded(
+          child: ListView.builder(
+            itemCount: filteredProducts.length,
+            itemBuilder: (context, index) {
+
+              final product = filteredProducts[index];
+
+              return Dismissible(
+                key: Key(product.name), 
 
             onDismissed: (direction) {
               setState(() {
@@ -246,14 +285,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 //   },
                 // );
               },
-
+          
             title: Text(product.name),
-            subtitle: Text('Stock: ${product.stock}'),
-            trailing: Text('£${product.price}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Text(
+                  'Stock: ${product.stock}',
+                ),
+                if (product.stock <= 5)
+                const Text(
+                  '⚠ Low Stock',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+             trailing: Text('£${product.price}'),
             ),
           );
-        }, 
-      ),
-    );
-  }
+        }, // itemBuilder
+      ), // ListView.builder
+    ), // Expanded
+  ], // children
+), // Column
+); 
 }
+}// Scaffold

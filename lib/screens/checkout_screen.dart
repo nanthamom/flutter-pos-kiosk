@@ -66,7 +66,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 final box = Hive.box('inventory');
 
                 box.put(
-                  0,
+                  widget.product.hiveKey,
                   {
                     'name': widget.product.name,
                     'price': widget.product.price,
@@ -75,7 +75,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 );
 
                 print(box.values);
-;
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('New Stock: $newStock'),
