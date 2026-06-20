@@ -58,6 +58,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
               .contains(searchQuery.toLowerCase());
       }).toList();
 
+      // Analytics Dashboard
+      final totalProducts = products.length;
+      final lowStockCount = products.where((product) {
+        return product.stock <= 5;
+      }).length;
+      final inventoryValue = products.fold(0.0, (sum,product) {
+        return sum + (product.price * product.stock);
+      });
+
       return Scaffold(
 
       appBar: AppBar(
@@ -157,6 +166,51 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
       body: Column(
       children: [
+
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      const Text('Product'),
+                      Text('$totalProducts'),
+                  ],
+                ),
+              ),
+            ),
+
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    const Text('Low Stock'),
+                    Text('$lowStockCount'),
+                  ],
+                ),
+              ),
+            ),
+
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    const Text('value'),
+                    Text('£${inventoryValue.toStringAsFixed(2)}'),
+                  ],
+                ),
+              ),            
+            ),
+            ],
+          ),
+        ),
 
         Padding(
           padding: const EdgeInsets.all(10),
@@ -304,7 +358,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ),
               ],
             ),
-
+            
              trailing: Text('£${product.price}'),
             ),
           );
@@ -313,6 +367,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     ), // Expanded
   ], // children
 ), // Column
-); 
+);
+
 }
 }// Scaffold
